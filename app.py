@@ -29,7 +29,7 @@ def snow_request():
 
 def CRauth():
     authurl = "https://aa-saleseng-usw2.my.automationanywhere.digital/v1/authentication"
-    data = {"Username": "nafis.keshwani","Password": "admin123"}
+    data = {"Username": "faizan.saiyed","Password": "test1234"}
     data_json = json.dumps(data)
     headers = {'Content-Type':'application/json'}
     response = requests.post(authurl, data=data_json, headers=headers)
