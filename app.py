@@ -11,6 +11,14 @@ from flask import make_response
 # Flask app should start in global layout
 app = Flask(__name__)
 
+@app.route('/second_call', methods=['GET'])
+def second_callback():
+    if request.method == 'GET':
+         #....
+         pass
+ 
+    return "OK"
+
 @app.route('/snow_request', methods=['POST'])
 def snow_request():
     req = request.get_json(silent=True, force=True)
