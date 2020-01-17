@@ -20,8 +20,8 @@ def snow_request():
         return r
 
 def CRauth():
-    authurl = "<enter url>/v1/authentication"
-    data = {"Username": "<user>","Password": "<password>"}
+    authurl = "https://aa-saleseng-usw2.my.automationanywhere.digital/v1/authentication"
+    data = {"Username": "nafis.keshwani","Password": "test1234"}
     data_json = json.dumps(data)
     headers = {'Content-Type':'application/json'}
     response = requests.post(authurl, data=data_json, headers=headers)
@@ -31,7 +31,7 @@ def CRauth():
 
 def deploybot(phonenumber):
     token = CRauth()
-    CRurl = "<enter url>/v2/automations/deploy"
+    CRurl = "https://aa-saleseng-usw2.my.automationanywhere.digital/v2/automations/deploy"
     data = {"fileId": "34787","runAsUserIds":["1678"],"runWithRdp": "false","botInput":{"vPhoneNumber":{"type": "STRING","string": phonenumber}}}
     data_json = json.dumps(data)
     headers = {'Content-Type':'application/json',"X-Authorization":token}
