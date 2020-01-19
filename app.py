@@ -40,8 +40,8 @@ def CRauth():
 def deploybot(phonenumber):
     token = CRauth()
     CRurl = "https://aa-saleseng-usw2.my.automationanywhere.digital/v2/automations/deploy"
-    #data = {"fileId": "34787","runAsUserIds":["1678"],"runWithRdp": "false","botInput":{"vPhoneNumber":{"type": "STRING","string": phonenumber}}}
-    data = {"fileId": "34787","runAsUserIds":["1678"],"poolIds":["15"],"runWithRdp": "false","botInput":{"vPhoneNumber":{"type": "STRING","string": phonenumber}}}
+    #data = {"fileId": "34787","runAsUserIds":["1478"],"runWithRdp": "false","botInput":{"vPhoneNumber":{"type": "STRING","string": phonenumber}}}
+    data = {"fileId": "34787","runAsUserIds":["1478"],"poolIds":["17"],"runWithRdp": "false","botInput":{"vPhoneNumber":{"type": "STRING","string": phonenumber}}}
     data_json = json.dumps(data)
     headers = {'Content-Type':'application/json',"X-Authorization":token}
     response = requests.post(CRurl, data=data_json, headers=headers)
