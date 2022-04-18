@@ -1,0 +1,6 @@
+*.atmx
+*.mbot
+filelock
+.git_old*/
+Bot Store/
+System/
