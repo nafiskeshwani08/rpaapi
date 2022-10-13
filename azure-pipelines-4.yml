@@ -1,0 +1,189 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  name: Default
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      #Get values from config file to populate thse variables
+      
+      $user="admin"
+      
+      #API key needs to be in single quote.
+      $password='Un1ver$e123'
+      
+      #This is ControlRoom url. e.g https://somecompany.my.automationanywhere.digital
+      #This is the base URI that will have to be appended with specific API URIs
+      $CRuri="http://nafisvm11101013.aaiproductdemo.com"
+      
+      $header = @{"accept"="application/json";"ContentType"="application/json"}
+      
+      $body= @{   "username"="$user"; "password"="$password" }
+      
+      <#
+      Call Authentication API first to get the token for $user and $apikey
+      Before calling the API make sure to append the api specific section to the CR uri.
+      #>
+      
+      try{
+      $APIUri="${CRuri}/v1/authentication"
+      $APIUri
+      $body
+      $header
+      
+      $AuthResponse = Invoke-RestMethod -Uri $APIUri -Body ($body|ConvertTo-Json) -Headers $header -Method POST 
+      }
+      catch{
+      Write-Host $PSItem }
+      
+      #For Testing uncomment next line to output the token to consol.
+      #$AuthResponse.token
+      
+      
+      <#
+      Call Repository API to get file Id for the file that needs to be exported.
+      Before calling the API make sure to append the api specific section to the CR uri.
+      Add $AuthResponse.token to the header
+      #>
+      
+      
+      $header.Add("X-Authorization",$AuthResponse.token)
+      
+      #change body for the repository API
+      
+      
+      
+      
+      
+      
+      <#
+      Call Export API to export the file using fileId from $RepositoryResponse for the file that needs to be exported.
+      Before calling the API make sure to append the api specific section to the CR uri.
+      #>
+      
+      $APIUri="${CRuri}/v2/blm/export"
+      
+      # Choose your export file name. Below command is done just for testing purposes to generate a random file name.
+      $ExportFileName = "exportbots"+(Get-Random -Maximum 100)
+      
+      $body=@{
+          name =  $ExportFileName
+          fileIds = @(
+                          21
+                  )
+          includePacages = "false"
+          
+      }| ConvertTo-Json -Depth 3
+      
+      try{
+      $ExportResponse=Invoke-RestMethod -Uri $APIUri -Body $body -Headers $header -Method Post
+      }
+      catch{
+      Write-Host $PSItem
+      }
+      
+      
+      <#
+      Call Status API to get download details for the exported file. There is no -Body to this API just add $ExportResponse.requestid to uri.
+      Before calling the API make sure to append the api specific section to the CR uri.
+      #>
+      
+      $APIUri = "${CRuri}/v2/blm/status/"+($ExportResponse.requestid)
+      
+      try{
+      
+      do
+      {
+      $StatusResponse =Invoke-RestMethod -Uri $APIUri -Headers $header -Method Get
+      } while ($StatusResponse.status -ne "COMPLETED")
+      
+      }
+      catch{
+      Write-Host $PSItem
+      }
+      
+      <#
+      Call download API to download exported file. 
+      Before calling the API make sure to append the api specific section to the CR uri.
+      #>
+      
+      $APIUri = "${CRuri}/v2/blm/download/"+($StatusResponse.downloadFileId)
+      
+      #Provide a valid local download path e.g. C:\rpa\devexports
+      $DownLoadPath = "C:\BotExports\" 
+      $DownLoadFileLocation = Join-Path -Path $DownLoadPath -ChildPath (${ExportFileName}+".zip")
+      
+      Invoke-RestMethod -Uri $APIUri -Headers $header -Method Get -OutFile $DownLoadFileLocation
+      
+      
+      
+      
+      
+      
+      
+      
+      #This import function will work only with PowerShell version 7.2
+      
+      $Uri = 'https://aa-saleseng-use-2.my.automationanywhere.digital'
+      
+      $user="nafis.keshwani"
+      
+      #API key needs to be in single quote.
+      $password="Automation@123"
+      
+      
+      
+      $header = @{"accept"="application/json";"ContentType"="application/json"}
+      
+      $body= @{"username"="$user"; "password"="$password" }
+      
+      
+      
+      try{
+      $APIUri="${Uri}/v1/authentication"
+      $APIUri
+      $body
+      $header
+      
+      $AuthResponse = Invoke-RestMethod -Uri $APIUri -Body ($body|ConvertTo-Json) -Headers $header -Method POST 
+      }
+      catch{
+      Write-Host $PSItem }
+      
+      #Plese see the export API file for process to authenticat and get the authorization token
+      $AuthResponse.token
+      
+      $header = @{
+          'X-Authorization' = $AuthResponse.token
+          'accept' = 'application/json'
+          'Content-Type' = 'multipart/form-data'
+      }
+      
+      
+      $form = @{
+          upload = Get-Item -Path $DownLoadFileLocation
+          actionIfExisting = 'OVERWRITE'
+          type = 'application/x-zip-compressed'
+          publicworkspace = 'true'
+      }
+      $APIUri="${Uri}/v2/blm/import"
+      
+      $Result = Invoke-RestMethod -Uri $APIUri -Method Post -Headers $header -Form $form
+      
+      $Result.requestId
+    pwsh: true
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
